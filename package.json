@@ -1,0 +1,34 @@
+{
+  "name": "@mjt-games/gamelang-2025",
+  "version": "2025.4.6-1349",
+  "sideEffects": false,
+  "description": "Game Language 2025",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "docs": "typedoc src/index.ts",
+    "build-docs": "pnpm run build && pnpm run docs",
+    "changelog": "./scripts/changes.sh > CHANGELOG.md",
+    "changelog-version": "pnpm run changelog && ./scripts/version.sh",
+    "publish": "pnpm run build-docs && pnpm run changelog-version",
+    "start": "tsx src/index.ts",
+    "build": "tsc -b",
+    "check": "tsc --noEmit -w"
+  },
+  "keywords": [],
+  "author": "Matt Taylor (https://mjt.dev)",
+  "license": "MIT",
+  "dependencies": {
+    "@mjt-engine/assert": "github:mjt-engine/assert",
+    "@mjt-engine/byte": "github:mjt-engine/byte",
+    "@mjt-engine/message": "github:mjt-engine/message",
+    "@mjt-engine/object": "github:mjt-engine/object",
+    "@mjt-engine/parse": "github:mjt-engine/parse"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typedoc": "^0.27.9",
+    "typescript": "^5.8.2"
+  }
+}
