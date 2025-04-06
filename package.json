@@ -1,6 +1,6 @@
 {
   "name": "@mjt-games/gamelang-2025",
-  "version": "2025.4.6-1349",
+  "version": "2025.4.6-1353",
   "sideEffects": false,
   "description": "Game Language 2025",
   "main": "./dist/index.js",
