@@ -17,5 +17,5 @@ Inspired by [Paradox Interactive](https://www.paradoxinteractive.com)'s [Clausew
 
 ## Documentation
 
-For detailed documentation, please visit the [project documentation](https://mjt-services.github.io/gamelang-2025/).
+For detailed documentation, please visit the [project documentation](https://mjt-games.github.io/gamelang-2025/).
 
