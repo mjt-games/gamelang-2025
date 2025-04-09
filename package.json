@@ -30,6 +30,7 @@
     "parsimmon": "^1.18.1"
   },
   "devDependencies": {
+    "@types/node": "^22.14.0",
     "@types/parsimmon": "^1.10.9",
     "tsx": "^4.19.3",
     "typedoc": "^0.27.9",

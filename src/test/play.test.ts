@@ -113,13 +113,33 @@ const NESTED_IF_PROGRAM = `{a=1} ? {
   
 }`;
 
-const parser = createGameLang();
-test("playing around", () => {
+export type GameProgram = ReturnType<typeof createGameLang>["program"];
+
+test("smoke test", () => {
+  const parser = createGameLang();
   parser.program.tryParse(SIMPLE_GAME);
   // parser.program.tryParse(SHORT_TIME_PROGRAM);
   // const result = parser.program.tryParse(DATE_PATTERN_PROGRAM);
   // const result = parser.program.tryParse(LIST_PROGRAM);
-  const result = parser.program.tryParse(MEMBER_EXP_PROGRAM);
-  console.log(JSON.stringify(result, null, 2));
+  // const result = parser.program.tryParse(MEMBER_EXP_PROGRAM);
+  // console.log(JSON.stringify(result, null, 2));
   // expect(createGameLang()).toBe(3);
 });
+
+test("program", () => {
+  const parser = createGameLang();
+  const result = parser.program.tryParse(COMPLEX_PROGRAM);
+  console.log(JSON.stringify(result, null, 2));
+  expect(result).toMatchSnapshot();
+});
+
+export type GameState = {};
+
+export const createGame = (text: string) => {
+  const state: GameState = {};
+  const program = createGameLang().program.tryParse(text);
+  return {
+    state,
+    program,
+  };
+};
