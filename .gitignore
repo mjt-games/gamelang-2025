@@ -4,6 +4,7 @@ src/html/fonts/
 certs
 sync
 dist
+__snapshots__
 
 lib-cov
 *.seed
