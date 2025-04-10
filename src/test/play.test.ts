@@ -1,145 +1,71 @@
-import { expect, test } from "vitest";
+import { test } from "vitest";
 import { createGameLang } from "../lang/createGameLang";
+import { SIMPLE_TEST_GAME } from "./programs/SIMPLE_TEST_GAME";
+import { SMOKE_TEST_PROGRAM } from "./programs/SMOKE_TEST_PROGRAM";
+import {
+  IDENTIFIER_PROGRAM,
+  SELECTOR_PROGRAM,
+  SIMPLE_ADDITION,
+} from "./programs/LANG_FEATURE_PROGRAMS";
+import { createState } from "../runtime/state/State";
+import { Arrays, isDefined, toMany } from "@mjt-engine/object";
+import { evaluateProgram } from "../runtime/evaluate/evaluateProgram";
 
-const COMPLEX_PROGRAM = `# This is a comment
-// This is another comment
-abc=12 #third comment
-abc= "test 123"
-abc= 'test xyz'
-abc= 12.34
-abc = yes
-abc = false
-abc = 2023.10.12
-abc = 23:59:42
-abc = 23:59
-abc = 2023.*.12
-abc = 23:*
-abc = 23:*:42
-abc = { a=1
-  a= 2 
-  b= {z="test"}
-  c=3
-}
-`;
-
-const SIMPLE_GAME = `
-
-# game UI will need to be aware of the shape of the game and what its control surfaces are.
-
-ticks_per_second = 60
-tick=0
-
-# setup time 
-minutes=0
-hours=0
-days=0
-
-# setup game entities
-characters = {}
-items = {"apple" "banana" "pear"}
-player_character = {} # the player character, assume UI fleshes this out
-
-# events are automatically removed on each tick
-event = {} # the UI interacts with the game via exposing an event, 
-
-next_id = 0 # incremented when read, provided by the UI
-
-
-# content
-names = {"Alice" "Bob" "Carol"}
-happiness_range = 0..10 # range syntax
-d20 = 1..20 # TODO impl range syntax
-
-# rules for time
-{tick%=60} ? {minutes+=1}
-{minutes%=60} ? {hours+=1 minutes=0}
-{hours%=24} ? {days+=1 hours=0}
-
-# create a character every hour until we have 10
-{hours%=1 characters<10} ? {
-  # add character entity
-  characters+= {
-    id=next_id
-    name?=names # ?= means pick random
-    happiness?=happiness_range
-  }
-}
-
-# user has to perform action to eat an apple
-{event.type == "eat_apple"} ? {
-  # roll a d20
-  {d20?>10} ? {
-    player_character.happiness+=1
-  } : {
-    player_character.happiness-=1
-  }
-}
-
-{player_character.happiness>10} ? {
-  log+= "You win!"
-}
-
-{player_character.happiness<0} ? {
-  log+= "You lose!"
-}
-
-
-`;
-
-const DATE_PROGRAM = `abc=2023.10.12`;
-const DATE_PATTERN_PROGRAM = `abc=2023.*.12`;
-const LONG_TIME_PROGRAM = `abc=23:59:42`;
-const LONG_TIME_PATTERN_PROGRAM = `abc=23:*:42`;
-const SHORT_TIME_PROGRAM = `abc=23:59`;
-const SHORT_TIME_PATTERN_PROGRAM = `abc=23:*`;
-const LIST_PROGRAM = `abc={a=*}`;
-const RANGE_PROGRAM = `abc=1..10`;
-const MEMBER_EXP_PROGRAM = `foo.bar.baz=1`;
-const IF_PROGRAM = `{a=1} ? {
-  b=2
-}`;
-
-const IF_ELSE_PROGRAM = `{a=1} ? {
-  b=2
-} : {
-  c=3 
-}`;
-
-const NESTED_IF_PROGRAM = `{a=1} ? {
-  b=2
-  {b=2} ? {
-    c=3
-  } 
-  
-}`;
-
-export type GameProgram = ReturnType<typeof createGameLang>["program"];
-
-test("smoke test", () => {
-  const parser = createGameLang();
-  parser.program.tryParse(SIMPLE_GAME);
-  // parser.program.tryParse(SHORT_TIME_PROGRAM);
-  // const result = parser.program.tryParse(DATE_PATTERN_PROGRAM);
-  // const result = parser.program.tryParse(LIST_PROGRAM);
-  // const result = parser.program.tryParse(MEMBER_EXP_PROGRAM);
-  // console.log(JSON.stringify(result, null, 2));
-  // expect(createGameLang()).toBe(3);
+test("evaluateProgram", () => {
+  // const program = createGameLang().program.tryParse(`{${SIMPLE_ADDITION}}`);
+  const program = createGameLang().program.tryParse(`{${SIMPLE_TEST_GAME}}`);
+  // console.log(JSON.stringify(program, null, 2));
+  const state = createState({});
+  evaluateProgram(state)(program);
+  console.log("state", state.getRoot());
+  console.log(JSON.stringify(state.getRoot(), null, 2));
 });
 
-test("program", () => {
-  const parser = createGameLang();
-  const result = parser.program.tryParse(COMPLEX_PROGRAM);
-  console.log(JSON.stringify(result, null, 2));
-  expect(result).toMatchSnapshot();
-});
+// test("play with state", () => {
+//   const state = createState({
+//     players: { name: "John", items: { key: "yes", bar: false } },
+//   });
+//   state.subscribe(["players", "items", "key"], (p) => {
+//     console.log("players items key changed", p);
+//   });
+//   // state.subscribe(["players"], (p) => {
+//   //   console.log("players changed", p);
+//   // });
+//   state.subscribe(["players", "active"], (p) => {
+//     console.log("players acitve changed", p);
+//   });
+//   console.log(state.getRoot());
+//   // state.set(["players", "name"], "bar");
+//   // state.set(["players", "active"], false);
+//   state.set(["players", "items", "key"], "123");
+//   const key = state.get(["players", "items", "key"]);
+//   console.log("key", key);
+// });
+
+// test("smoke test", () => {
+//   const parser = createGameLang();
+//   parser.program.tryParse(`{${SMOKE_TEST_PROGRAM}}`);
+// });
+
+// test("test game", () => {
+//   const parser = createGameLang();
+//   parser.program.tryParse(`{${SIMPLE_TEST_GAME}}`);
+// });
+
+// test("play", () => {
+//   const parser = createGameLang();
+//   const result = parser.program.tryParse(IDENTIFIER_PROGRAM);
+//   console.log(JSON.stringify(result, null, 2));
+// });
+export type GameObject = {
+  [key: string]: (string | number | boolean | GameObject)[];
+};
 
 export type GameState = {};
 
 export const createGame = (text: string) => {
-  const state: GameState = {};
   const program = createGameLang().program.tryParse(text);
   return {
-    state,
     program,
   };
 };

@@ -6,7 +6,7 @@ export const listEntry: TypedRule<GameLangSpec>["listEntry"] = (r) =>
   addLoc(
     P.seq(
       P.optWhitespace,
-      r.identifier,
+      r.selector,
       P.optWhitespace,
       r.op,
       P.optWhitespace,
@@ -15,8 +15,8 @@ export const listEntry: TypedRule<GameLangSpec>["listEntry"] = (r) =>
         r.ifExpr,
         r.list,
         r.boolean,
-        r.memberExpr,
-        r.identifier,
+        r.range,
+        r.selector,
         r.longTimePattern,
         r.longTime,
         r.shortTimePattern,
@@ -33,8 +33,10 @@ export const listEntry: TypedRule<GameLangSpec>["listEntry"] = (r) =>
       P.alt(P.optWhitespace, r.comment)
     ).map((value) => ({
       type: "listEntry",
-      key: value[1],
-      op: value[3].value,
-      value: value[5],
+      value: {
+        key: value[1],
+        op: value[3].value,
+        value: value[5],
+      },
     }))
   );

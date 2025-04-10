@@ -7,14 +7,16 @@ export const keyOperationListEntry: TypedRule<GameLangSpec>["keyOperationListEnt
     addLoc(
       P.seq(
         P.optWhitespace,
-        P.alt(r.memberExpr, r.identifier),
+        r.selector,
         P.optWhitespace,
         r.op,
 
         P.alt(P.optWhitespace, r.comment)
       ).map((value) => ({
         type: "keyOperationListEntry",
-        key: value[1],
-        op: value[3].value,
+        value: {
+          key: value[1],
+          op: value[3].value,
+        },
       }))
     );

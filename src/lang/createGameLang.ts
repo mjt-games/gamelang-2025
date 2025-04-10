@@ -1,32 +1,31 @@
 import P from "parsimmon";
-import type { GameLangSpec } from "./spec/GameLangSpec";
-import { program } from "./rule/program";
-import { binaryExpr } from "./rule/binaryExpr";
-import { comment } from "./rule/comment";
-import { expr } from "./rule/expr";
-import { blankLine } from "./rule/blankLine";
-import { singleQuoteString } from "./rule/singleQuoteString";
-import { doubleQuoteString } from "./rule/doubleQuoteString";
-import { pattern } from "./rule/pattern";
-import { decimal } from "./rule/decimal";
-import { integer } from "./rule/integer";
-import { longTimePattern } from "./rule/longTimePattern";
-import { longTime } from "./rule/longTime";
-import { shortTimePattern } from "./rule/shortTimePattern";
-import { shortTime } from "./rule/shortTime";
-import { listEntry } from "./rule/listEntry";
 import { anonListEntry } from "./rule/anonListEntry";
+import { blankLine } from "./rule/blankLine";
+import { boolean } from "./rule/boolean";
+import { comment } from "./rule/comment";
+import { date } from "./rule/date";
+import { datePattern } from "./rule/datePattern";
+import { decimal } from "./rule/decimal";
+import { doubleQuoteString } from "./rule/doubleQuoteString";
+import { expr } from "./rule/expr";
+import { identifier } from "./rule/identifier";
+import { ifElseExpr } from "./rule/ifElseExpr";
+import { ifExpr } from "./rule/ifExpr";
+import { integer } from "./rule/integer";
 import { keyOperationListEntry } from "./rule/keyOperationListEntry";
 import { list } from "./rule/list";
-import { ifExpr } from "./rule/ifExpr";
-import { ifElseExpr } from "./rule/ifElseExpr";
-import { datePattern } from "./rule/datePattern";
-import { date } from "./rule/date";
-import { boolean } from "./rule/boolean";
+import { listEntry } from "./rule/listEntry";
+import { longTime } from "./rule/longTime";
+import { longTimePattern } from "./rule/longTimePattern";
 import { op } from "./rule/op";
-import { identifier } from "./rule/identifier";
+import { pattern } from "./rule/pattern";
+import { program } from "./rule/program";
 import { range } from "./rule/range";
-import { memberExpr } from "./rule/memberExpr";
+import { selector } from "./rule/selector";
+import { shortTime } from "./rule/shortTime";
+import { shortTimePattern } from "./rule/shortTimePattern";
+import { singleQuoteString } from "./rule/singleQuoteString";
+import type { GameLangSpec } from "./spec/GameLangSpec";
 
 export const createGameLang = () =>
   P.createLanguage<GameLangSpec>({
@@ -36,11 +35,11 @@ export const createGameLang = () =>
     identifier,
     op,
     boolean,
-    date,
+    date: date,
     datePattern,
     shortTime,
     shortTimePattern,
-    longTime,
+    longTime: longTime,
     longTimePattern,
     integer,
     decimal,
@@ -49,12 +48,12 @@ export const createGameLang = () =>
     singleQuoteString,
     blankLine,
     expr,
-    binaryExpr,
     program,
     anonListEntry,
     keyOperationListEntry,
     range,
     ifExpr,
     ifElseExpr,
-    memberExpr,
+    selector,
+    // memberExpr,
   });

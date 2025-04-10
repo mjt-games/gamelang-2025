@@ -27,7 +27,9 @@
     "@mjt-engine/object": "github:mjt-engine/object",
     "@mjt-engine/parse": "github:mjt-engine/parse",
     "@sinclair/typebox": "^0.34.33",
-    "parsimmon": "^1.18.1"
+    "immer": "^10.1.1",
+    "parsimmon": "^1.18.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

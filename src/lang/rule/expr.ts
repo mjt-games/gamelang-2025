@@ -9,7 +9,7 @@ export const expr: TypedRule<GameLangSpec>["expr"] = (r) =>
       r.ifExpr,
       r.list,
       r.boolean,
-      r.memberExpr,
+      r.selector,
       r.identifier,
       r.longTimePattern,
       r.longTime,

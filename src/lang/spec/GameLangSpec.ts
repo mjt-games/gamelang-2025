@@ -1,32 +1,31 @@
 import type { Op } from "./Op";
 import type { Pattern } from "./Pattern";
+import type {
+  Selector,
+  Decimal,
+  Range,
+  YmdDate,
+  YmdDatePattern,
+  HmTime,
+  HmTimePattern,
+  HmsTime,
+  HmsTimePattern,
+  Identifier,
+} from "./Value";
 import type { SourceLocation } from "./SourceLocation";
-
-export type Primitive = GameLangSpec[
-  | "list"
-  | "doubleQuoteString"
-  | "singleQuoteString"
-  | "integer"
-  | "decimal"
-  | "boolean"
-  | "date"
-  | "datePattern"
-  | "shortTime"
-  | "shortTimePattern"
-  | "longTime"
-  | "longTimePattern"
-  | "pattern"
-  | "identifier"];
+import type { ValueNode } from "./ValueNode";
 
 export type GameLangSpec = {
-  memberExpr: {
-    type: "memberExpr";
+  selector: {
+    type: "selector";
     loc: SourceLocation;
-    value: {
-      object: GameLangSpec["identifier"];
-      property: GameLangSpec["identifier" | "memberExpr"];
-    };
+    value: Selector;
   };
+  // memberExpr: {
+  //   type: "memberExpr";
+  //   loc: SourceLocation;
+  //   value: unknown;
+  // };
 
   ifExpr: {
     type: "ifExpr";
@@ -49,28 +48,35 @@ export type GameLangSpec = {
   list: {
     type: "list";
     loc: SourceLocation;
-    value: GameLangSpec["listEntry"][];
+    value: GameLangSpec[
+      | "listEntry"
+      | "keyOperationListEntry"
+      | "anonListEntry"][];
   };
 
   anonListEntry: {
     type: "anonlistEntry";
     loc: SourceLocation;
-    value: Primitive;
+    value: ValueNode;
   };
 
   keyOperationListEntry: {
     type: "keyOperationListEntry";
     loc: SourceLocation;
-    key: GameLangSpec["identifier"];
-    op: Op;
+    value: {
+      key: GameLangSpec["selector"];
+      op: Op;
+    };
   };
 
   listEntry: {
     type: "listEntry";
     loc: SourceLocation;
-    key: GameLangSpec["identifier"];
-    op: Op;
-    value: Primitive;
+    value: {
+      key: GameLangSpec["selector"];
+      op: Op;
+      value: ValueNode;
+    };
   };
 
   blankLine: {
@@ -105,75 +111,48 @@ export type GameLangSpec = {
   decimal: {
     type: "decimal";
     loc: SourceLocation;
-    value: number;
+    value: Decimal;
   };
   range: {
     type: "range";
     loc: SourceLocation;
-    value: { start: number; end: number };
+    value: Range;
   };
   date: {
     type: "date";
     loc: SourceLocation;
-    value: {
-      year: number;
-      month: number;
-      day: number;
-    };
+    value: YmdDate;
   };
   datePattern: {
     type: "datePattern";
     loc: SourceLocation;
-    value: {
-      year: number | Pattern;
-      month: number | Pattern;
-      day: number | Pattern;
-    };
+    value: YmdDatePattern;
   };
   shortTime: {
     type: "shortTime";
     loc: SourceLocation;
-    value: {
-      hour: number;
-      minute: number;
-    };
+    value: HmTime;
   };
   shortTimePattern: {
     type: "shortTimePattern";
     loc: SourceLocation;
-    value: {
-      hour: number | Pattern;
-      minute: number | Pattern;
-    };
+    value: HmTimePattern;
   };
   longTime: {
     type: "longTime";
     loc: SourceLocation;
-    value: {
-      hour: number;
-      minute: number;
-      second: number;
-    };
+    value: HmsTime;
   };
   longTimePattern: {
     type: "longTimePattern";
     loc: SourceLocation;
-    value: {
-      hour: number | Pattern;
-      minute: number | Pattern;
-      second: number | Pattern;
-    };
+    value: HmsTimePattern;
   };
   boolean: {
     type: "boolean";
     loc: SourceLocation;
     value: boolean;
   };
-  // symbol: {
-  //   type: "symbol";
-  //   loc: SourceLocation;
-  //   value: string;
-  // };
   op: {
     type: "op";
     loc: SourceLocation;
@@ -182,13 +161,8 @@ export type GameLangSpec = {
   identifier: {
     type: "identifier";
     loc: SourceLocation;
-    value: string;
+    value: Identifier;
   };
-  // keyword: {
-  //   type: "keyword";
-  //   loc: SourceLocation;
-  //   value: string;
-  // };
   expr: {
     type: "expr";
     loc: SourceLocation;
@@ -197,7 +171,7 @@ export type GameLangSpec = {
       | "ifExpr"
       | "list"
       | "boolean"
-      | "memberExpr"
+      | "selector"
       | "longTimePattern"
       | "longTime"
       | "shortTimePattern"
@@ -207,27 +181,20 @@ export type GameLangSpec = {
       | "range"
       | "pattern"
       | "singleQuoteString"
-      | "identifier"
       | "integer"
       | "decimal"
       | "doubleQuoteString"];
-    // | "string"
-    // | "number"
-    // | "boolean"
-    // | "symbol"
-    // | "binaryExpr"
-    // | "unaryExpr"
   };
 
-  binaryExpr: {
-    type: "binaryExpr";
-    loc: SourceLocation;
-    value: {
-      left: GameLangSpec["expr"];
-      op: GameLangSpec["op"];
-      right: GameLangSpec["expr"];
-    };
-  };
+  // binaryExpr: {
+  //   type: "binaryExpr";
+  //   loc: SourceLocation;
+  //   value: {
+  //     left: GameLangSpec["expr"];
+  //     op: GameLangSpec["op"];
+  //     right: GameLangSpec["expr"];
+  //   };
+  // };
 
   // unaryExpr: {
   //   type: "unaryExpr";
@@ -240,6 +207,6 @@ export type GameLangSpec = {
   program: {
     type: "program";
     loc: SourceLocation;
-    value: GameLangSpec["expr" | "comment" | "blankLine"][];
+    value: GameLangSpec["comment" | "list"][];
   };
 };
