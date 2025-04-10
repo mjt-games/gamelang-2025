@@ -2,6 +2,7 @@
 
 
 ## 2025-04-10
+- exported parts of spec ([9aa6986](https://github.com/mjt-games/gamelang-2025/commit/9aa698660de48eb9f5f367c3aee8165d90ee820e)) by Matt Taylor
 - refactor of some language features, a basic evaluator is present ([09ba225](https://github.com/mjt-games/gamelang-2025/commit/09ba22582b6e464fc4258227894d8cbdec097874)) by Matt Taylor
 
 ## 2025-04-09
