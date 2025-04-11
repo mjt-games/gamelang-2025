@@ -4,6 +4,9 @@ import { produce } from "immer";
 
 type Path = string[];
 
+export type PathElement = [string, number];
+export type StatePath = PathElement[];
+
 function getValueAtPath<T extends object, R = unknown>(obj: T, path: Path): R {
   return path.reduce<any>((acc, key) => acc?.[key], obj);
 }

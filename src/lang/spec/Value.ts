@@ -85,8 +85,32 @@ export type ListEntry = {
   op: Op;
   value: Value;
 };
+export const isListEntry = (maybe: unknown): maybe is ListEntry => {
+  const straw = maybe as ListEntry;
+  return (
+    typeof straw === "object" &&
+    straw !== null &&
+    "key" in straw &&
+    "op" in straw &&
+    "value" in straw
+  );
+};
+
 export type KeyOperationListEntry = {
   key: Selector;
   op: Op;
 };
+
+export const isKeyOperationListEntry = (
+  maybe: unknown
+): maybe is KeyOperationListEntry => {
+  const straw = maybe as KeyOperationListEntry;
+  return (
+    typeof straw === "object" &&
+    straw !== null &&
+    "key" in straw &&
+    "op" in straw
+  );
+};
+
 export type List = (Value | ListEntry | KeyOperationListEntry)[];
