@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 2025-04-12
+- currrent progress is incomplete, but there are some good parts worth stealing, see README ([0d14661](https://github.com/mjt-games/gamelang-2025/commit/0d14661fd1d474d6e9955750799d5a25f4ded091)) by Matt Taylor
+
 ## 2025-04-11
 - memory manager, string interner introduced ([fbf81b4](https://github.com/mjt-games/gamelang-2025/commit/fbf81b401712264cda1c60773aac45ce6498e1ac)) by Matt Taylor
 
