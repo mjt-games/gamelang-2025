@@ -1,4 +1,4 @@
-import { test } from "vitest";
+import { expect, test } from "vitest";
 import { createGameLang } from "../lang/createGameLang";
 import { SIMPLE_TEST_GAME } from "./programs/SIMPLE_TEST_GAME";
 import { SMOKE_TEST_PROGRAM } from "./programs/SMOKE_TEST_PROGRAM";
@@ -10,37 +10,39 @@ import {
 import { createState } from "../runtime/state/State";
 import { Arrays, isDefined, toMany } from "@mjt-engine/object";
 import { evaluateProgram } from "../runtime/evaluate/evaluateProgram";
+import { ChunkManager } from "../runtime/state/ChunkManager";
+import type { Quad } from "../runtime/state/Quad";
 
-// test("evaluateProgram", () => {
-//   // const program = createGameLang().program.tryParse(`{${SIMPLE_ADDITION}}`);
-//   const program = createGameLang().program.tryParse(`{${SIMPLE_TEST_GAME}}`);
-//   // console.log(JSON.stringify(program, null, 2));
-//   const state = createState({});
-//   evaluateProgram(state)(program);
-//   console.log("state", state.getRoot());
-//   console.log(JSON.stringify(state.getRoot(), null, 2));
-// });
-
-test("play with state", () => {
-  const state = createState({
-    players: { name: "John", items: { key: "yes", bar: false } },
-  });
-  state.subscribe(["players", "items", "key"], (p) => {
-    console.log("players items key changed", p);
-  });
-  // state.subscribe(["players"], (p) => {
-  //   console.log("players changed", p);
-  // });
-  state.subscribe(["players", "active"], (p) => {
-    console.log("players acitve changed", p);
-  });
-  console.log(state.getRoot());
-  // state.set(["players", "name"], "bar");
-  // state.set(["players", "active"], false);
-  state.set(["players", "items", "key"], ["123"]);
-  const key = state.get(["players", "items", "key"]);
-  console.log("key", key);
+test("evaluateProgram", () => {
+  // const program = createGameLang().program.tryParse(`{${SIMPLE_ADDITION}}`);
+  const program = createGameLang().program.tryParse(`{${SIMPLE_TEST_GAME}}`);
+  // console.log(JSON.stringify(program, null, 2));
+  // const state = createState({});
+  // evaluateProgram(state)(program);
+  // console.log("state", state.getRoot());
+  // console.log(JSON.stringify(state.getRoot(), null, 2));
 });
+
+// test("play with state", () => {
+//   const state = createState({
+//     players: { name: "John", items: { key: "yes", bar: false } },
+//   });
+//   state.subscribe(["players", "items", "key"], (p) => {
+//     console.log("players items key changed", p);
+//   });
+//   // state.subscribe(["players"], (p) => {
+//   //   console.log("players changed", p);
+//   // });
+//   state.subscribe(["players", "active"], (p) => {
+//     console.log("players acitve changed", p);
+//   });
+//   console.log(state.getRoot());
+//   // state.set(["players", "name"], "bar");
+//   // state.set(["players", "active"], false);
+//   state.set(["players", "items", "key"], ["123"]);
+//   const key = state.get(["players", "items", "key"]);
+//   console.log("key", key);
+// });
 
 // test("smoke test", () => {
 //   const parser = createGameLang();

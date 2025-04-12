@@ -5,6 +5,7 @@ certs
 sync
 dist
 __snapshots__
+build
 
 lib-cov
 *.seed

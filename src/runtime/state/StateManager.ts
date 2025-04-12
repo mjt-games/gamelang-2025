@@ -4,9 +4,13 @@ import {
   type List,
   type Value,
 } from "../../lang/spec/Value";
+import type { ChunkManager } from "./ChunkManager";
+import type { ObjectRel } from "./ObjectRel";
+import type { Quad } from "./Quad";
+import type { QuadManager } from "./QuadManager";
 import { StringInterner } from "./StringInterner";
 
-enum ValueType {
+export enum ValueType {
   Integer = 0,
   String = 1,
   Boolean = 2,
@@ -14,18 +18,69 @@ enum ValueType {
   // ... future types
 }
 
-type Quad = [objectId: number, key: number, value: number, type: ValueType];
-const QUAD_SIZE = 4;
+export type StateSelector = {
+  path: (string | number)[];
+};
 
-export type ValueDecomposer<T extends Value = Value> = (
+export type StateUpdateEvent = {
+  type: "update";
+  objectId: number;
+  key: number;
+  value: number;
+};
+export const ValueObject = (stateManager: StateManager) => (quad: Quad) => {
+  return {
+    toObject: () => {
+      const [objectId, key, value, type] = quad;
+      switch (type) {
+        case ValueType.Integer: {
+          return value;
+        }
+        case ValueType.Boolean: {
+          return value > 0;
+        }
+        case ValueType.String: {
+          return stateManager.stringInterner.resolve(value);
+        }
+        case ValueType.List: {
+          const quads = stateManager.quadManager.getChunks(objectId);
+          return quads.reduce((acc, quad) => {
+            // const [objectId, key, value, type] = quad;
+            // const keyValue = stateManager.stringInterner.resolve(key);
+            // if (!keyValue) return acc;
+            const quadKey = stateManager.quadManager.chunkToKey(quad);
+            const decomposed = stateManager.getValue(quadKey);
+            if (!decomposed) return acc;
+            acc.push(decomposed);
+            return acc;
+          }, [] as List);
+        }
+        default: {
+          throw new Error(`Unsupported value type: ${type}`);
+        }
+      }
+      // if (!decomposer) {
+      //   throw new Error(`No decomposer found for type ${type}`);
+      // }
+      // return {
+      //   objectId,
+      //   key,
+      //   value: decomposer(stateManager)(quad),
+      //   type,
+      // };
+    },
+  };
+};
+
+export type ValueDecomposer<QT extends ValueType, T extends Value> = (
   stateManager: StateManager
-) => (quad: Quad) => T | undefined;
+) => (quad: Quad<QT>) => T | undefined;
 
 export type ValueComposer<T extends Value> = (
   stateManager: StateManager
 ) => (value: T) => [number, number];
 
-export const integerDecomposer: ValueDecomposer<Integer> =
+export const integerDecomposer: ValueDecomposer<Integer, number> =
   (stateManager) => (quad) => {
     const [objectId, key, value] = quad;
     return value;
@@ -35,7 +90,7 @@ export const integerComposer: ValueComposer<Integer> =
     return [value, ValueType.Integer];
   };
 
-export const booleanDecomposer: ValueDecomposer<boolean> =
+export const booleanDecomposer: ValueDecomposer<ValueType.Boolean, boolean> =
   (stateManager) => (quad) => {
     const [objectId, key, value] = quad;
     return value > 0;
@@ -45,7 +100,7 @@ export const booleanComposer: ValueComposer<boolean> =
     return [value ? 1 : 0, ValueType.Boolean];
   };
 
-export const stringDecomposer: ValueDecomposer<string> =
+export const stringDecomposer: ValueDecomposer<ValueType.String, string> =
   (stateManager) => (quad) => {
     const [objectId, key, value] = quad;
     return stateManager.stringInterner.resolve(value);
@@ -57,10 +112,10 @@ export const stringComposer: ValueComposer<string> =
     return [id, ValueType.String];
   };
 
-export const listDecomposer: ValueDecomposer<List> =
+export const listDecomposer: ValueDecomposer<ValueType.List, List> =
   (stateManager) => (quad) => {
     const [objectId, key, value] = quad;
-    const quads = stateManager.memoryManager.getQuads(objectId);
+    const quads = stateManager.quadManager.getChunks(objectId);
     return quads.reduce((acc, quad) => {
       // const [objectId, key, value, type] = quad;
       // const keyValue = stateManager.stringInterner.resolve(key);
@@ -72,7 +127,7 @@ export const listDecomposer: ValueDecomposer<List> =
     }, [] as List);
   };
 export const listComposer: ValueComposer<List> = (stateManager) => (value) => {
-  const objectId = stateManager.memoryManager.createObject();
+  // const objectId = stateManager.memoryManager.createObject();
   value.forEach((item) => {
     if (isListEntry(item)) {
       const { key, value, op } = item;
@@ -88,14 +143,20 @@ export const listComposer: ValueComposer<List> = (stateManager) => (value) => {
   return [0, ValueType.List]; // placeholder
 };
 
+export type ValueDecomposerRecord<
+  QT extends ValueType,
+  VT extends Value
+> = Record<QT, ValueDecomposer<QT, VT>>;
+
 export class StateManager {
-  public memoryManager: MemoryManager;
+  public quadManager: ChunkManager<Quad<ValueType>>;
   public stringInterner: StringInterner;
-  private decomposers: Record<ValueType, ValueDecomposer> = {
+  public objectRelManager: ChunkManager<ObjectRel>;
+  private decomposers: Record<ValueType, ValueDecomposer<any, any>> = {
     [ValueType.Integer]: integerDecomposer,
     [ValueType.String]: stringDecomposer,
     [ValueType.Boolean]: booleanDecomposer,
-    [ValueType.List]: integerDecomposer,
+    [ValueType.List]: listDecomposer,
   };
 
   private composers: Record<ValueType, ValueComposer<any>> = {
@@ -106,20 +167,22 @@ export class StateManager {
   };
 
   constructor({
-    memoryManager,
+    quadManager,
     stringInterner,
+    objectRelManager,
   }: {
-    memoryManager: MemoryManager;
+    quadManager: ChunkManager<Quad>;
     stringInterner: StringInterner;
+    objectRelManager: ChunkManager<ObjectRel>;
   }) {
-    this.memoryManager = memoryManager;
+    this.quadManager = quadManager;
     this.stringInterner = stringInterner;
+    this.objectRelManager = objectRelManager;
   }
 
   getValue<T extends Value = Value>(id: number): T | undefined {
-    const quads = this.memoryManager.getQuads(id);
-    if (quads.length === 0) return undefined;
-    const quad = quads[0];
+    const quad = this.quadManager.getChunk(id);
+    if (!quad) return undefined;
     const [objectId, key, value, type] = quad;
     const decomposer = this.decomposers[type];
     if (!decomposer) {
@@ -145,78 +208,4 @@ export class StateManager {
         throw new Error(`Unsupported value type: ${typeof value}`);
     }
   };
-}
-
-export class MemoryManager {
-  private memory: Uint32Array;
-  private nextId = 1;
-  private freeIds: number[] = [];
-  private objectIndex = new Map<number, Set<number>>(); // objectId -> Set of quad start indices
-
-  constructor(initialCapacity: number = 1024) {
-    this.memory = new Uint32Array(initialCapacity * QUAD_SIZE);
-  }
-
-  private ensureCapacity(requiredQuads: number) {
-    const needed = (this.count() + requiredQuads) * QUAD_SIZE;
-    if (needed > this.memory.length) {
-      const newSize = Math.max(needed, this.memory.length * 2);
-      const newMemory = new Uint32Array(newSize);
-      newMemory.set(this.memory);
-      this.memory = newMemory;
-    }
-  }
-
-  private count(): number {
-    return this.memory.length / QUAD_SIZE;
-  }
-
-  createObject(): number {
-    return this.freeIds.length > 0 ? this.freeIds.pop()! : this.nextId++;
-  }
-
-  deleteObject(objectId: number) {
-    const indices = this.objectIndex.get(objectId);
-    if (indices) {
-      for (const i of indices) {
-        this.memory[i] = 0; // optional: clear memory
-        this.memory[i + 1] = 0;
-        this.memory[i + 2] = 0;
-        this.memory[i + 3] = 0;
-      }
-      this.objectIndex.delete(objectId);
-    }
-    this.freeIds.push(objectId);
-  }
-
-  addQuad(objectId: number, key: number, value: number, type: ValueType) {
-    this.ensureCapacity(1);
-    const offset = this.findNextFreeOffset();
-    this.memory.set([objectId, key, value, type], offset);
-    if (!this.objectIndex.has(objectId))
-      this.objectIndex.set(objectId, new Set());
-    this.objectIndex.get(objectId)!.add(offset);
-  }
-
-  getQuads(objectId: number): Quad[] {
-    const indices = this.objectIndex.get(objectId);
-    if (!indices) return [];
-    const quads: Quad[] = [];
-    for (const offset of indices) {
-      const [id, key, value, type] = this.memory.subarray(
-        offset,
-        offset + QUAD_SIZE
-      );
-      quads.push([id, key, value, type]);
-    }
-    return quads;
-  }
-
-  private findNextFreeOffset(): number {
-    const count = this.count();
-    for (let i = 0; i < count * QUAD_SIZE; i += QUAD_SIZE) {
-      if (this.memory[i] === 0) return i;
-    }
-    return count * QUAD_SIZE; // append at end
-  }
 }
